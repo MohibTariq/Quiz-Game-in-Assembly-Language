@@ -1,0 +1,1046 @@
+INCLUDE IRVINE32.INC
+.data
+age_res BYTE "Age Restriction!!", 0
+partition BYTE "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ",0
+    display BYTE      "                       ==================================================== ",0
+    BYTE              "                     ||                                                   ||",0                                      
+    BYTE              "                     ||            *    B R A I N   B U Z Z  *            ||",0
+    BYTE              "                     ||                                                   ||",0
+    BYTE              "                     ||---------------------------------------------------||",0
+    BYTE              "                     ||                                                   ||",0
+    BYTE              "                     ||      Please read the rules carefully              ||",0
+    BYTE              "                     ||                then press Enter                   ||",0 
+    BYTE              "                     ||                to start the game                  ||",0
+    BYTE              "                     ||                                                   ||",0
+    BYTE              "                     ||                                                   ||",0
+    BYTE              "                      ===================================================== ",0
+    space BYTE " ",0
+	wrongCheck PROTO
+	filehandle DWORD ?
+	filename BYTE "game_rules2.txt",0
+	buffSize=2000
+	age_comp BYTE "13", 0
+	buffer  BYTE buffSize DUP(?)
+	prompt1 BYTE "CAESAR CIPHER EQUATION-- (p-5)mod 26--",0
+	prompt4 BYTE "Incorrect-Try Again",0
+	prompt5 BYTE "Correct Answer",0
+	prompt6 BYTE " : Decode The Word ? ",0
+	prompt7 BYTE "Your Typed Answer Is : ",0
+	instruction BYTE "Subtract Factor : ",0
+	msg BYTE "Enter The Number Which Should Come Next: ",0 
+	msg1 BYTE "Enter The First Character Which Should Come Next: ",0
+	msg2 BYTE "Enter The Second Character Which Should Come Next: ",0
+	msg4 BYTE "Incorrect",0
+	msg5 BYTE "Correct Answer",0
+	msg6 BYTE "_ : Predict the series",0
+	msg7 BYTE "Score = ",0
+	series DWORD 3 DUP(?)
+	check1 DWORD ?
+	check2 DWORD ?
+	temp DWORD ?
+	score DWORD ?
+	diff DWORD ?
+	verify1 DWORD ?
+	verify2 DWORD ?
+	ans1 DWORD ?
+	ans2 DWORD ?
+	ans3 DWORD ?
+	ans4 DWORD ?
+	c1 DWORD ?
+	tie1 BYTE "It's a tie between player1 and player2!", 0
+	tie3 BYTE "It's a tie between three players!", 0
+	tie2 BYTE "It's a tie between player2 and player3!", 0
+	tie4 BYTE "It's a tie between player1 and player3!", 0
+	qans DWORD 5 DUP(?)
+	store DWORD ?
+	sub_factor DWORD ?
+	flag DWORD ?
+	flags DWORD ?
+	player_1 PROTO
+    player_2 PROTO
+    Randomfunc PROTO
+	RandomNumber DWORD ?
+    player_3 PROTO
+	wrongNo DWORD 0
+    welcome BYTE "WELCOME TO THE BRAIN BUZZ!!",0
+	players BYTE "NO. OF PLAYERS: 1 player, 2 player, 3 player",0
+	player DWORD ? 
+	Deets1 BYTE "P1 Details: ",0
+	Deets2 BYTE "P2 Details: ",0
+	Deets3 BYTE "P3 Details: ",0
+	msg1P1 BYTE "P1 Enter Your Name: ",0
+	msg2P1 BYTE "P1 Enter Your Age: ",0
+	msg1P2 BYTE "P2 Enter Your Name: ",0
+	msg2P2 BYTE "P2 Enter Your Age: ",0
+	msg1P3 BYTE "P3 Enter Your Name: ",0
+	msg2P3 BYTE "P3 Enter Your Age: ",0
+	nam1 BYTE 50 Dup(?)
+	age1 BYTE 10 Dup(?)
+	score1 DWORD ?
+	nam2 BYTE 50 Dup(?)
+	age2 BYTE 10 Dup(?)
+	score2 DWORD ?
+	nam3 BYTE 50 Dup(?)
+	age3 BYTE 10 Dup(?)
+	score3 DWORD ?
+	BUFFER_nam1 BYTE 50 DUP(?)
+	BUFFER_nam2 BYTE 50 DUP(?)
+	BUFFER_nam3 BYTE 50 DUP(?)
+	BUFFER_age1 BYTE 10 DUP(?)
+	BUFFER_age2 BYTE 10 DUP(?)
+	BUFFER_age3 BYTE 10 Dup(?)
+	outhandle_1 HANDLE ?
+	outhandle_2 HANDLE ?
+	outhandle_3 HANDLE ?
+	outputfile_1 BYTE "1 player.txt", 0
+	outputfile_2 BYTE "2 player.txt", 0
+	outputfile_3 BYTE "3 player.txt", 0
+	q1p1 BYTE "Questions for player 1:", 0
+	q2p2 BYTE "Questions for player 2:", 0
+	q3p3 BYTE "Questions for player 3:", 0
+	chance1 BYTE "Two more chances left!", 0
+	chance2 BYTE "One more chance left!", 0
+	chance3 BYTE "No more chances left!", 0
+	chance4 BYTE "Disqualified!", 0
+	win1 BYTE "Player1 is winner!", 0
+	win2 BYTE "Player2 is winner!", 0
+	win3 BYTE "Player3 is winner!", 0
+	original BYTE 5 Dup(?)
+	decoded BYTE 5 Dup(?)
+	hints DWORD ?
+	file_key DWORD ?
+    cipherk BYTE "cipher_key.txt",0
+    size_key=2000
+    buff_key BYTE size_key DUP(?)
+	hint BYTE "DO YOU WANT TO GET A HINT ?"
+	     BYTE 00Dh,00Ah, "1.YES 2.NO",0
+	r_hints BYTE "Remaining Hints Are : ",0 
+	caption BYTE "Age Restriction!",0
+    question BYTE "Are you older than 13 years?",0
+    BYTE 0dh, 0ah
+    BYTE "Would you like to receive the results?", 0
+.code
+main PROC
+mov eax,0
+mov edx,0
+mov esi,0
+mov eax, blue + (lightGray * 16)
+call SetTextColor
+call displayP
+mov edx, OFFSET welcome
+call WriteString
+call crlf
+mov edx, OFFSET players
+call WriteString
+call crlf
+call ReadDec
+mov player,eax
+CMP player,1
+jz player_1
+CMP player,2
+mov flags,1
+jz player_1
+CMP player,3
+mov flags,1
+mov flag,1
+jz player_1
+exit
+main ENDP
+
+;-------------------------------------------P L A Y E R  1--------------------------------------------------------------------------
+player_1 PROC
+call crlf
+mov ebx, OFFSET caption
+mov edx, OFFSET question
+call MsgBoxAsk
+mov edx, OFFSET msg1P1
+call WriteString
+mov edx, OFFSET nam1
+mov ecx, SIZEOF nam1
+call ReadString
+call crlf
+mov edx, OFFSET msg2P1
+call WriteString
+mov edx, OFFSET age1
+mov ecx, SIZEOF age1
+call ReadString
+call crlf
+
+mov esi,OFFSET age1
+mov edi,OFFSET age_comp
+cmpsb
+ja L1
+jbe L2
+L1:
+mov edx,offset q1p1
+call WriteString
+call crlf
+call crlf
+call Randomfunc
+mov eax,score
+mov score1,eax
+
+mov edx,0
+mov edx, offset outputfile_1
+call Createoutputfile
+mov outhandle_1, eax
+
+mov eax, outhandle_1 
+mov edx, OFFSET nam1
+mov ecx, LENGTHOF nam1
+call WriteToFile
+
+mov eax, outhandle_1
+mov edx, OFFSET age1
+mov ecx,LENGTHOF age1
+call WriteToFile
+
+mov eax, outhandle_1 
+mov edx, OFFSET score1
+mov ecx, LENGTHOF score1
+call WriteToFile
+
+mov eax,outhandle_1
+call CloseFile
+
+mov  EDX,OFFSET outputfile_1
+call OpenInputFile
+mov  outhandle_1, EAX
+call crlf
+mov edx,OFFSET Deets1
+Call WriteString
+call crlf
+
+mov edx,0
+mov eax, outhandle_1
+mov edx, OFFSET BUFFER_nam1
+mov ecx, LENGTHOF BUFFER_nam1
+call ReadFromFile
+mov edx,0
+mov edx,OFFSET BUFFER_nam1
+call WriteString
+call crlf
+
+mov eax, outhandle_1
+mov edx, OFFSET BUFFER_age1
+mov ecx, LENGTHOF BUFFER_age1
+call ReadFromFile
+mov edx,0
+mov edx,OFFSET BUFFER_age1
+call WriteString
+call crlf
+mov edx,0
+mov eax, outhandle_1
+mov edx, OFFSET score1
+mov ecx, LENGTHOF score1
+call ReadFromFile
+mov eax,outhandle_1
+call CloseFile
+mov edx,offset msg7
+call WriteString
+mov eax,score1
+call WriteDec
+call crlf
+call crlf
+jmp ex
+
+L2:
+mov edx,offset age_res
+call writestring
+call crlf
+call crlf
+call player_1
+jmp ex
+
+ex:
+cmp flags,1
+jz player_2
+ret
+player_1 ENDP
+exit
+;-------------------------------------------P L A Y E R  2--------------------------------------------------------------------------
+player_2 PROC
+mov score,0
+mov WrongNo,0
+mov ebx, OFFSET caption
+mov edx, OFFSET question
+call MsgBoxAsk
+mov edx, OFFSET msg1P2
+call WriteString
+mov edx, OFFSET nam2
+mov ecx, SIZEOF nam2
+call ReadString
+call crlf
+mov edx, OFFSET msg2P2
+call WriteString
+mov edx, OFFSET age2
+mov ecx, SIZEOF age2
+call ReadString
+call crlf
+
+mov esi,OFFSET age2
+mov edi,OFFSET age_comp
+cmpsb
+ja L11
+jbe L22
+
+L11:
+mov edx,offset q2p2
+call WriteString
+call crlf
+call crlf
+call Randomfunc
+mov eax,score
+mov score2,eax
+
+mov edx, offset outputfile_2
+call Createoutputfile
+mov outhandle_2, eax
+
+mov eax, outhandle_2 
+mov edx, OFFSET nam2
+mov ecx, LENGTHOF nam2
+call WriteToFile
+
+mov eax, outhandle_2
+mov edx, OFFSET age2
+mov ecx,LENGTHOF age2
+call WriteToFile
+
+mov eax, outhandle_2
+mov edx, OFFSET score2
+mov ecx,LENGTHOF score2
+call WriteToFile
+
+mov eax,outhandle_2
+call CloseFile
+
+mov  EDX,OFFSET outputfile_2
+call OpenInputFile
+mov  outhandle_2, EAX
+call crlf
+mov edx,OFFSET Deets2
+Call WriteString
+call crlf
+
+mov edx,0
+mov eax, outhandle_2
+mov edx, OFFSET BUFFER_nam2
+mov ecx, LENGTHOF BUFFER_nam2
+call ReadFromFile
+mov edx,OFFSET BUFFER_nam2
+call WriteString
+call crlf
+
+mov eax, outhandle_2
+mov edx, OFFSET BUFFER_age2
+mov ecx, LENGTHOF BUFFER_age2
+call ReadFromFile
+mov edx,OFFSET BUFFER_age2
+call WriteString
+call crlf
+mov eax, outhandle_2
+mov edx, OFFSET score2
+mov ecx, LENGTHOF score2
+call ReadFromFile
+mov eax,outhandle_2
+call CloseFile
+
+mov edx,offset msg7
+call WriteString
+mov eax,score2
+call WriteDec
+call crlf
+call crlf
+jmp ex
+
+L22:
+mov edx,offset age_res
+call writestring
+call crlf
+call crlf
+call player_2
+jmp ex
+
+ex:
+cmp flag,1
+jz player_3
+
+mov eax,score1
+cmp eax,score2
+ja L1
+jb L2
+je L3 
+
+L1:
+mov edx,offset win1
+call WriteString
+call crlf
+
+L2:
+mov edx,offset win2
+call WriteString
+call crlf 
+
+L3:
+mov edx,offset tie1
+call Writestring
+call crlf
+
+ret
+player_2 ENDP
+exit
+;-------------------------------------------P L A Y E R  3--------------------------------------------------------------------------
+player_3 PROC
+mov score,0
+mov WrongNo,0
+mov ebx, OFFSET caption
+mov edx, OFFSET question
+call MsgBoxAsk
+mov edx, OFFSET msg1P3
+call WriteString
+mov edx, OFFSET nam3
+mov ecx, SIZEOF nam3
+call ReadString
+call crlf
+
+mov edx, OFFSET msg2P3
+call WriteString
+mov edx, OFFSET age3
+mov ecx, SIZEOF age3
+call ReadString
+call crlf
+
+mov esi,OFFSET age3
+mov edi,OFFSET age_comp
+cmpsb
+ja L111
+jbe L222
+
+L111:
+mov edx,offset q3p3
+call WriteString
+call crlf
+call crlf
+call Randomfunc
+mov eax,score
+mov score3,eax
+
+mov edx, offset outputfile_3
+call Createoutputfile
+mov outhandle_3, eax
+
+mov eax, outhandle_3 
+mov edx, OFFSET nam3
+mov ecx, LENGTHOF nam3
+call WriteToFile
+
+mov eax, outhandle_3
+mov edx, OFFSET age3
+mov ecx,LENGTHOF age3
+call WriteToFile
+
+mov eax, outhandle_3
+mov edx, OFFSET score3
+mov ecx,LENGTHOF score3
+call WriteToFile
+
+mov eax,outhandle_3
+call CloseFile
+
+mov  EDX,OFFSET outputfile_3
+call OpenInputFile
+mov  outhandle_3, EAX
+call crlf
+mov edx,OFFSET Deets3
+Call WriteString
+call crlf
+
+mov edx,0
+mov eax, outhandle_3
+mov edx, OFFSET BUFFER_nam3
+mov ecx, LENGTHOF BUFFER_nam3
+call ReadFromFile
+mov edx,OFFSET BUFFER_nam3
+call WriteString
+call crlf
+
+mov eax, outhandle_3
+mov edx, OFFSET BUFFER_age3
+mov ecx, LENGTHOF BUFFER_age3
+call ReadFromFile
+mov edx,OFFSET BUFFER_age3
+call WriteString
+call crlf
+mov eax, outhandle_3
+mov edx, OFFSET score3
+mov ecx, LENGTHOF score3
+call ReadFromFile
+mov eax,outhandle_3
+call CloseFile
+
+mov edx,offset msg7
+call WriteString
+mov eax,score3
+call WriteDec
+call crlf
+call crlf
+jmp exx
+
+L222:
+mov edx,offset age_res
+call writestring
+call crlf
+call crlf
+call player_3
+jmp exx
+
+exx:
+mov eax,score1
+cmp eax,score2
+ja L1
+jb L2
+je L6
+
+L1:
+cmp eax,score3
+ja L3
+jb L4
+je L7
+
+L2:
+mov ebx,score3
+cmp ebx,score2
+ja L4
+jb L5
+je L10
+ 
+L3:
+mov edx,offset win1
+call Writestring
+call crlf
+jmp ex
+
+L4:
+mov edx,offset win3
+call Writestring
+call crlf
+jmp ex
+
+L5:
+mov edx,offset win2
+call Writestring
+call crlf
+jmp ex
+
+L6:
+cmp eax,score3
+je Lee
+ja L8
+jb L4
+
+Lee:
+mov edx,offset tie3
+call Writestring
+call crlf
+jmp ex
+
+L8:
+mov edx,offset tie1
+call WriteString
+call crlf
+jmp ex
+
+L7:
+cmp ebx,score2
+je Lee
+ja L9
+jb L5
+
+L9:
+mov edx,offset tie4
+call WriteString
+call crlf
+jmp ex
+
+L10:
+cmp eax,score2
+je Lee
+ja L3
+jb L11
+
+L11:
+mov edx,offset tie2
+call WriteString
+call crlf
+jmp ex
+
+ex:
+ret
+player_3 ENDP
+;-------------------------------------------A L P H A B E T  S E R I E S--------------------------------------------------------------------------
+
+AlphabetSeries1 PROC
+mov esi,OFFSET series
+	call Randomize
+	mov eax,15
+	call RandomRange
+	mov diff,eax
+	mov eax,0
+L1:
+	call Randomize
+	mov eax,5Ah
+	call RandomRange
+	cmp eax,41h
+    jb L1
+    mov ecx,3
+fors:
+	add eax,diff
+	cmp eax,5Ah
+	jge new
+	jb old
+	new:
+	sub eax,5Ah 
+	mov ebx,41h
+	add eax,ebx
+	mov [esi],eax
+	jmp x
+	old:
+	mov [esi],eax
+x:
+add esi,TYPE series
+Loop fors
+mov check1,eax
+mov esi,OFFSET series
+push OFFSET series
+call GenerateSeriesChar
+add esp,4
+mov edx,OFFSET msg6
+Call WriteString
+call Crlf
+
+ques1: 
+mov ebx,0
+mov edx,OFFSET msg1
+call WriteString
+call ReadChar
+call WriteChar
+mov bl,al
+sub ebx,diff
+mov eax,check1
+cmp eax,ebx
+call crlf
+je ques2
+jmp wrong
+
+ques2:
+mov ebx,0
+call Crlf
+mov edx,OFFSET msg2
+call WriteString
+call ReadChar
+call WriteChar
+mov bl,al
+sub ebx,diff
+mov eax,check2
+cmp eax,ebx
+je correct
+jne wrong
+
+correct:
+		add score,1
+		mov edx,OFFSET msg5
+		call WriteString
+		call Crlf
+		jmp endproc
+wrong:
+		add score,0
+		mov edx,OFFSET msg4
+		call WriteString
+		call Crlf
+		inc wrongNo
+        INVOKE wrongCheck
+        call crlf
+		jmp endproc
+
+endproc:
+mov edx,OFFSET msg7
+call WriteString
+mov eax,score
+call WriteDec
+ret
+AlphabetSeries1 ENDP
+
+
+;-------------------------------------------A L P H A B E T  S E R I E S--------------------------------------------------------------------------
+GenerateSeriesChar PROC
+push ebp
+mov ebp,esp
+mov eax,0
+mov ebx,0
+call crlf
+mov esi,[ebp+8]
+mov ecx,3
+L1:
+mov eax,[esi]
+call WriteChar
+add eax,1
+cmp eax,5Ah
+jge new1
+jb old1
+new1:
+	sub eax,5Ah 
+	mov ebx,41h
+	add eax,ebx
+	call WriteChar
+	mov edx,OFFSET space
+	call WriteString
+	jmp x1
+old1:
+	call WriteChar
+	mov edx,OFFSET space
+	call WriteString
+x1:
+add esi, TYPE series
+Loop L1
+mov check2,eax
+pop ebp
+ret
+GenerateSeriesChar ENDP
+;-------------------------------------------N U M B E R   S E R I E S  T Y P E   1--------------------------------------------------------------------------
+NumberSeries1 PROC
+call Randomize
+mov eax,15
+call RandomRange
+mov diff,eax
+
+call Randomize
+mov eax,30
+call RandomRange
+mov ecx,4
+L1:
+add eax,diff
+call WriteDec
+mov edx,OFFSET space
+call WriteString
+Loop L1
+mov edx,OFFSET msg6
+Call WriteString
+call Crlf
+mov ebx,eax
+add ebx,diff
+mov edx,OFFSET msg
+call WriteString
+call ReadDec
+
+cmp eax,ebx
+je correct
+jne wrong
+
+wrong:
+add score,0
+mov edx,OFFSET msg4
+call WriteString
+call crlf
+inc wrongNo
+INVOKE wrongCheck
+call crlf
+jmp endproc
+
+correct:
+add score,1
+mov edx,OFFSET msg5
+call WriteString
+call crlf
+
+endproc:
+mov edx,OFFSET msg7
+call WriteString
+mov eax,score
+call WriteDec
+call crlf
+ret
+NumberSeries1 ENDP
+;-------------------------------------------N U M B E R   S E R I E S  T Y P E   2--------------------------------------------------------------------------
+NumberSeries2 PROC
+call Randomize
+mov eax,15
+call RandomRange
+mov diff,eax
+
+call Randomize
+mov eax,30
+call RandomRange
+mov ecx,4
+L1:
+sub eax,diff
+call WriteInt
+mov edx,OFFSET space
+call WriteString
+Loop L1
+mov edx,OFFSET msg6
+Call WriteString
+call Crlf
+mov ebx,eax
+sub ebx,diff
+mov edx,OFFSET msg
+call WriteString
+call ReadInt
+
+cmp eax,ebx
+je correct
+jne wrong
+
+correct:
+add score,1
+mov edx,OFFSET msg5
+call WriteString
+call crlf
+jmp endproc
+
+wrong:
+add score,0
+mov edx,OFFSET msg4
+call WriteString
+call crlf
+inc wrongNo
+INVOKE wrongCheck
+call crlf
+
+
+endproc:
+mov edx,OFFSET msg7
+call WriteString
+mov eax,score
+call WriteDec
+call crlf
+ret
+NumberSeries2 ENDP
+;-------------------------------------------E N C O D I N G  T Y P E   1--------------------------------------------------------------------------
+Encoding PROC
+mov eax,0
+
+call Randomize
+mov eax,15
+call RandomRange
+mov diff,eax
+mov eax,0
+mov esi,OFFSET original
+L2:
+call Randomize
+mov eax,5Ah
+call RandomRange
+cmp eax,41h
+jb L2
+	mov ecx,5
+	fors:
+		add eax,diff
+		cmp eax,5Ah
+		jge new
+		jb old
+			new:
+				sub eax,5Ah
+				mov eax,41h
+			old:
+				mov [esi], eax
+				add eax,5
+				cmp eax,5Ah
+				jge new1
+				jb old1
+					new1:
+						sub eax,5Ah
+						mov eax,41h
+					old1:
+						call WriteChar
+						add esi,TYPE original
+		Loop fors
+		mov edx,OFFSET prompt6
+		call WriteString
+		call crlf
+		mov edx,OFFSET prompt1
+		call WriteString
+		call crlf
+
+		mov ebx,3
+		mov hints,ebx
+
+		mov edx,OFFSET hint
+		call WriteString
+		call Crlf
+		call ReadDec
+		cmp eax,1
+		JE display_hint
+		JNE continue
+
+		display_hint:
+
+		mov edx,OFFSET cipherk
+		call OpenInputFile
+		mov file_key, eax
+		mov eax,file_key
+		mov edx,OFFSET buff_key
+		mov ecx,size_key
+		call ReadFromFile
+		
+
+		mov edx,0
+		mov edx,OFFSET buff_key
+		call WriteString
+		call crlf
+		dec hints
+		jmp continue
+
+continue:
+mov edx,OFFSET r_hints
+call WriteString
+call Crlf
+mov eax,hints
+call WriteDec
+;-------- Check Decoded -------
+mov edx, OFFSET decoded
+mov ecx, LENGTHOF decoded
+call ReadString
+
+cld ; direction = forward
+mov esi,OFFSET original
+mov edi,OFFSET decoded
+mov ecx,LENGTHOF original
+repe cmpsb
+jb wrong
+jmp correct
+correct:
+		add score,1
+		mov edx,OFFSET prompt5
+		call WriteString
+		call Crlf
+		jmp endproc
+wrong:
+		add score,0
+		mov edx,OFFSET prompt4
+		call WriteString
+		call Crlf
+		inc WrongNo
+		INVOKE WrongCheck 
+		call Crlf
+endproc:
+mov edx,OFFSET msg7
+call WriteString
+mov eax,score
+call WriteDec
+ret
+Encoding ENDP
+;-------------------------------------------R A N D O M  F U N C T I O N  C A L L--------------------------------------------------------------------------
+Randomfunc PROC
+       mov eax,0  
+       mov ecx,5
+	   L1:
+	   push ecx
+	   call crlf
+	   mov edx,OFFSET Partition
+	   call WriteString
+	   call crlf
+	   call Encoding
+	   call crlf
+	   mov edx,OFFSET Partition
+	   call WriteString
+	   call crlf
+	   call NumberSeries1
+	   call crlf
+	   mov edx,OFFSET Partition
+	   call WriteString
+	   call crlf
+	   call NumberSeries2
+	   call crlf
+	   mov edx,OFFSET Partition
+	   call WriteString
+	   call crlf
+	   call AlphabetSeries1
+	   pop ecx
+	   Loop L1
+	   ret
+	   Randomfunc ENDP
+;----------------------------------W R O N G  C H E C K  P R O C --------------------------------------------------
+	   wrongCheck PROC
+
+	   cmp wrongNo,1
+	   je chan1
+	   cmp wrongNo,2
+	   je chan2
+	   cmp wrongNo,3
+	   je chan3
+	   ja chan4
+
+	   chan1:
+	   mov edx,offset chance1
+	   call Writestring
+	   call crlf
+	   jmp ex
+	   
+	   chan2:
+	   mov edx,offset chance2
+	   call Writestring
+	   call crlf
+	   jmp ex
+	   
+	   chan3:
+	   mov edx,offset chance3
+	   call Writestring
+	   call crlf
+	   jmp ex
+
+	   chan4:
+	   mov edx,offset chance4
+	   call Writestring
+	   call crlf
+	   jmp ex
+
+	   ex:
+	   ret
+	   wrongCheck ENDP
+;------------------------------- D I S P L A Y  P R O C-------------------------------------------------
+	   displayP PROC
+	 
+       mov ecx,7
+       L1:
+       call crlf
+       Loop L1
+       mov edx,OFFSET display
+       mov eax,LENGTHOF display
+       mov ecx,12
+       L2:
+       call crlf
+       call WriteString
+       add edx,eax
+       Loop L2
+       mov ecx,4
+       L6:
+       call crlf
+       Loop L6
+	   mov edx,OFFSET filename
+		call OpenInputFile
+		mov filehandle, EAX
+		mov eax,filehandle
+		mov edx,OFFSET buffer
+		mov ecx,buffSize
+		call ReadFromFile
+		mov edx,0
+		mov edx,OFFSET buffer
+		call WriteString
+		call crlf
+		call crlf 
+	    call crlf
+	    call waitmsg
+       call clrscr
+	   ret
+       displayP ENDP
+       END main
+
+
+
+
+
+
+
+
+
+
